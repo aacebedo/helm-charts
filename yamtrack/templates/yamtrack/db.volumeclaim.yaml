@@ -1,0 +1,28 @@
+{{- if .Values.yamtrack.persistence.db.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  annotations:
+    katenary.v3/compose-hash: 292ab7d1a53ab4cb915ee941e150cdccf9fd60eb
+    katenary.v3/version: 3.0.0-rc6
+    {{- with .Values.yamtrack.persistence.db.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  labels:
+    {{- include "yamtrack.labels" . | nindent 4 }}
+    katenary.v3/component: yamtrack
+    {{- with .Values.yamtrack.persistence.db.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  name: '{{ include "yamtrack.fullname" . }}-yamtrack-db'
+spec:
+  accessModes:
+  {{- .Values.yamtrack.persistence.db.accessMode | toYaml | nindent 2 }}
+  resources:
+    requests:
+      storage: {{ tpl .Values.yamtrack.persistence.db.size $ }}
+  {{- if ne .Values.yamtrack.persistence.db.storageClass "-" }}
+  storageClassName: '{{ .Values.yamtrack.persistence.db.storageClass }}'
+  {{- end }}
+
+{{- end }}

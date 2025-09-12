@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  annotations:
+    katenary.v3/compose-hash: 292ab7d1a53ab4cb915ee941e150cdccf9fd60eb
+    katenary.v3/version: 3.0.0-rc6
+  labels:
+    {{- include "yamtrack.labels" . | nindent 4 }}
+    katenary.v3/component: yamtrack
+  name: '{{ include "yamtrack.fullname" . }}-yamtrack'
+data:
+  REDIS_URL: redis://{{ include "yamtrack.fullname" . }}-redis:6379
+  SECRET: {{ .Values.yamtrack.secret | quote }}
+  TZ: Europe/Berlin

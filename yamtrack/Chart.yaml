@@ -1,0 +1,18 @@
+# This is the main values.yaml file for the yamtrack chart.
+# More information can be found in the chart's README.md file.
+#
+# generated at: 2025-09-12T21:19:21+02:00
+# compose files: docker-compose.yml
+# compose hash (sha1): 292ab7d1a53ab4cb915ee941e150cdccf9fd60eb
+
+# Name of the chart (required), basically the name of the project.
+name: yamtrack
+apiVersion: v2
+
+# Version of the chart (required)
+version: 0.1.0
+
+# Version of the application (required).
+# This should be the main application version.
+appVersion: 0.1.0
+description: A Helm chart for yamtrack

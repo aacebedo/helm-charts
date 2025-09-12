@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    katenary.v3/compose-hash: 292ab7d1a53ab4cb915ee941e150cdccf9fd60eb
+    katenary.v3/version: 3.0.0-rc6
+  labels:
+    {{- include "yamtrack.labels" . | nindent 4 }}
+    katenary.v3/component: yamtrack
+  name: '{{ include "yamtrack.fullname" . }}-yamtrack'
+spec:
+  replicas: {{ .Values.yamtrack.replicas }}
+  selector:
+    matchLabels:
+      {{- include "yamtrack.selectorLabels" . | nindent 6 }}
+      katenary.v3/component: yamtrack
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        {{- include "yamtrack.selectorLabels" . | nindent 8 }}
+        katenary.v3/component: yamtrack
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: '{{ include "yamtrack.fullname" . }}-yamtrack'
+        image: '{{ tpl .Values.yamtrack.repository.image $ }}:{{ tpl .Values.yamtrack.repository.tag $ | default "latest" }}'
+        imagePullPolicy: {{ .Values.yamtrack.imagePullPolicy }}
+        name: yamtrack
+        ports:
+        - containerPort: 8000
+          name: yamtrack
+        {{- if .Values.yamtrack.resources }}
+        resources:
+          {{ .Values.yamtrack.resources | toYaml | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+        {{- if .Values.yamtrack.persistence.db.enabled }}
+        - mountPath: /yamtrack/db
+          name: db
+        {{- end }}
+      {{- if .Values.pullSecrets }}
+      imagePullSecrets:
+      {{- .Values.pullSecrets | toYaml | nindent 6 }}
+      {{- end }}
+      initContainers:
+      - command:
+        - /bin/sh
+        - -c
+        - |-
+          until nc -z {{ include "yamtrack.fullname" . }}-redis 6379; do
+            sleep 1;
+          done
+        image: busybox:latest
+        name: wait-for-redis
+        {{- if .Values.yamtrack.resources }}
+        resources:
+          {{ .Values.yamtrack.resources | toYaml | nindent 10 }}
+        {{- end }}
+      {{- if .Values.yamtrack.nodeSelector }}
+      nodeSelector:
+        {{- .Values.yamtrack.nodeSelector | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if ne .Values.yamtrack.serviceAccount "" }}
+      serviceAccountName: {{ .Values.yamtrack.serviceAccount | quote }}
+      {{- end }}
+      volumes:
+      {{- if .Values.yamtrack.persistence.db.enabled }}
+      - name: db
+        persistentVolumeClaim:
+          claimName: '{{ include "yamtrack.fullname" . }}-yamtrack-db'
+      {{- end }}
