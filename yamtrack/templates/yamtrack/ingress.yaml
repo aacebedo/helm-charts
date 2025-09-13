@@ -1,23 +1,21 @@
-{{- if .Values.yamtrack.ingress.enabled -}}
 {{- $fullname := include "yamtrack.fullname" . -}}
 {{- $tlsname := printf "%s-%s-tls" $fullname "yamtrack" -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    katenary.v3/compose-hash: 292ab7d1a53ab4cb915ee941e150cdccf9fd60eb
-    katenary.v3/version: 3.0.0-rc6
     {{- if .Values.yamtrack.ingress.tls }}
-    {{- if .Values.yamtrack.ingress.certManager.clusterIssuer }}
-    cert-manager.io/cluster-issuer: {{ .Values.yamtrack.ingress.certManager.clusterIssuer | quote }}
+    {{- if .Values.yamtrack.ingress.tls.certManager.clusterIssuer }}
+    cert-manager.io/cluster-issuer: {{ .Values.yamtrack.ingress.tls.certManager.clusterIssuer | quote }}
     {{- end }}
     {{- end }}
     {{- if .Values.yamtrack.ingress.annotations -}}
         {{- toYaml .Values.yamtrack.ingress.annotations | nindent 4 }}
     {{- end }}
   labels:
-    {{- include "yamtrack.labels" . | nindent 4 }}
-    katenary.v3/component: yamtrack
+    {{- if .Values.yamtrack.ingress.labels -}}
+        {{- toYaml .Values.yamtrack.ingress.labels | nindent 4 }}
+    {{- end }}
   name: '{{ $fullname }}-yamtrack'
 spec:
   rules:
@@ -35,7 +33,5 @@ spec:
   tls:
   - hosts:
     - '{{ tpl .Values.yamtrack.ingress.host . }}'
-    secretName: '{{ $fullname }}-tls-0'
+    secretName: '{{ $tlsname }}'
   {{ end -}}
-
-{{- end -}}

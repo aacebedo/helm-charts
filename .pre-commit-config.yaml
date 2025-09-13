@@ -1,0 +1,41 @@
+# Pre-commit hooks for Helm charts
+repos:
+  # General code quality hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: ["--allow-multiple-documents"]
+        exclude: ^.*templates/.*\.yaml$ # Exclude Helm templates
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+
+  - repo: https://github.com/gruntwork-io/pre-commit
+    rev: v0.1.30
+    hooks:
+      - id: helmlint
+
+  - repo: https://github.com/jtyr/kubeconform-helm
+    rev: v0.2.0
+    hooks:
+      - id: kubeconform-helm
+
+  # YAML linting with custom config
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.32.0
+    hooks:
+      - id: yamllint
+        args: [--config-file, .yamllint]
+
+  # Local hooks
+  - repo: local
+    hooks:
+      - id: datree for yamtrack
+        name: Datree policy check for yamtrack
+        entry: helm datree test yamtrack
+        language: system
+        files: ^yamtrack/.*\.(yaml|yml)$
+        pass_filenames: false

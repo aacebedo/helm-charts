@@ -18,19 +18,3 @@
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
-
-{{- define "yamtrack.labels" -}}
-{{ include "yamtrack.selectorLabels" .}}
-{{ if .Chart.Version -}}
-{{ printf "katenary.v3/chart-version: '%s'" .Chart.Version }}
-{{- end }}
-{{ if .Chart.AppVersion -}}
-{{ printf "katenary.v3/app-version: '%s'" .Chart.AppVersion }}
-{{- end }}
-{{- end -}}
-
-{{- define "yamtrack.selectorLabels" -}}
-{{- $name := default .Chart.Name .Values.nameOverride -}}
-{{ printf "katenary.v3/name: %s" $name }}
-{{ printf "katenary.v3/instance: %s" .Release.Name }}
-{{- end -}}

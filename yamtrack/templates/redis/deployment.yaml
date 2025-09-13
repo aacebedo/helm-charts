@@ -1,45 +1,53 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    katenary.v3/compose-hash: 292ab7d1a53ab4cb915ee941e150cdccf9fd60eb
-    katenary.v3/version: 3.0.0-rc6
-  labels:
-    {{- include "yamtrack.labels" . | nindent 4 }}
-    katenary.v3/component: redis
   name: '{{ include "yamtrack.fullname" . }}-redis'
 spec:
-  replicas: {{ .Values.redis.replicas }}
   selector:
     matchLabels:
-      {{- include "yamtrack.selectorLabels" . | nindent 6 }}
-      katenary.v3/component: redis
+      app.kubernetes.io/name: {{ include "yamtrack.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: redis
   strategy: {}
   template:
     metadata:
       labels:
-        {{- include "yamtrack.selectorLabels" . | nindent 8 }}
-        katenary.v3/component: redis
+        app.kubernetes.io/name: {{ include "yamtrack.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: redis
     spec:
       containers:
-      - image: '{{ tpl .Values.redis.repository.image $ }}:{{ tpl .Values.redis.repository.tag $ | default "latest" }}'
-        imagePullPolicy: {{ .Values.redis.imagePullPolicy }}
-        name: yamtrack-redis
-        ports:
-        - containerPort: 6379
-          name: redis
-        {{- if .Values.redis.resources }}
-        resources:
-          {{ .Values.redis.resources | toYaml | nindent 10 }}
-        {{- end }}
-      {{- if .Values.pullSecrets }}
-      imagePullSecrets:
-      {{- .Values.pullSecrets | toYaml | nindent 6 }}
-      {{- end }}
-      {{- if .Values.redis.nodeSelector }}
-      nodeSelector:
-        {{- .Values.redis.nodeSelector | toYaml | nindent 8 }}
-      {{- end }}
-      {{- if ne .Values.redis.serviceAccount "" }}
-      serviceAccountName: {{ .Values.redis.serviceAccount | quote }}
-      {{- end }}
+        - image: '{{ tpl .Values.redis.repository.image $ }}:{{ tpl .Values.redis.repository.tag $ }}'
+          imagePullPolicy: {{ .Values.redis.pullPolicy }}
+          name: yamtrack-redis
+          ports:
+            - containerPort: 6379
+              name: redis
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          livenessProbe:
+            exec:
+              command:
+              - redis-cli
+              - ping
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+              - redis-cli
+              - ping
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+          resources:
+            limits:
+              cpu: 1500m
+              memory: 2400Mi
+            requests:
+              cpu: 75m
+              memory: 200Mi
+          {{- if .Values.redis.nodeSelector }}
+          nodeSelector:
+            {{- .Values.redis.nodeSelector | toYaml | nindent 8 }}
+          {{- end }}
