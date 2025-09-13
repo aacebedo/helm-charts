@@ -2,9 +2,15 @@ apiVersion: v1
 kind: Service
 metadata:
   name: '{{ include "yamtrack.fullname" . }}-yamtrack'
+  labels:
+    {{- include "yamtrack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: yamtrack
 spec:
   ports:
   - name: yamtrack
     port: 8000
     protocol: TCP
     targetPort: yamtrack
+  selector:
+    {{- include "yamtrack.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: yamtrack

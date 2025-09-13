@@ -2,19 +2,19 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: '{{ include "yamtrack.fullname" . }}-yamtrack'
+  annotations:
+    datree.skip/CONTAINERS_INCORRECT_READONLYROOTFILESYSTEM_VALUE: Unable to run if readonly
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "yamtrack.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
-      app.kubernetes.io/component: redis
+      {{- include "yamtrack.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: yamtrack
   strategy: {}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "yamtrack.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/component: redis
+        {{- include "yamtrack.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: yamtrack
     spec:
       containers:
         - envFrom:
@@ -24,7 +24,7 @@ spec:
           imagePullPolicy: {{ .Values.yamtrack.pullPolicy }}
           name: yamtrack
           securityContext:
-            readOnlyRootFilesystem: true
+            readOnlyRootFilesystem: false
             allowPrivilegeEscalation: false
           livenessProbe:
             httpGet:
@@ -56,10 +56,10 @@ spec:
             {{ .Values.yamtrack.resources | toYaml | nindent 10 }}
           {{- end }}
           volumeMounts:
-          {{- if .Values.yamtrack.persistence.db.enabled }}
             - mountPath: /yamtrack/db
               name: db
-          {{- end }}
+            - mountPath: /tmp
+              name: tmp-volume
       initContainers:
         - command:
           - /bin/sh
@@ -75,8 +75,12 @@ spec:
         {{- .Values.yamtrack.nodeSelector | toYaml | nindent 8 }}
       {{- end }}
       volumes:
+        - name: db
       {{- if .Values.yamtrack.persistence.db.enabled }}
-      - name: db
-        persistentVolumeClaim:
-          claimName: '{{ include "yamtrack.fullname" . }}-yamtrack-db'
+          persistentVolumeClaim:
+            claimName: '{{ include "yamtrack.fullname" . }}-yamtrack-db'
+      {{- else }}
+          emptyDir: {}
       {{- end }}
+        - name: tmp-volume
+          emptyDir: {}

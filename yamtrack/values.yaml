@@ -2,7 +2,7 @@ pullSecrets: []
 redis:
   repository:
     image: redis
-    tag: alpine-8
+    tag: 8-alpine
   nodeSelector: {}
   pullPolicy: IfNotPresent
 
@@ -16,7 +16,7 @@ yamtrack:
       size: 1Gi
       accessMode:
         - ReadWriteOnce
-      enabled: true
+      enabled: false
       annotations: {}
       labels: {}
   ingress:
@@ -24,7 +24,7 @@ yamtrack:
     labels: {}
     host: yamtrack.localhost
     path: /
-    enabled: false
+    enabled: true
     tls:
       enabled: true
       certManager:
@@ -32,3 +32,4 @@ yamtrack:
   nodeSelector: {}
   pullPolicy: IfNotPresent
   secret: "longstring"
+  env: {}

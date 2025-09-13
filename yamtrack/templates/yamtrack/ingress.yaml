@@ -26,7 +26,7 @@ spec:
           service:
             name: '{{ $fullname }}-yamtrack'
             port:
-              name: http
+              name: yamtrack
         path: '{{ tpl .Values.yamtrack.ingress.path $ }}'
         pathType: ImplementationSpecific
   {{- if .Values.yamtrack.ingress.tls.enabled }}

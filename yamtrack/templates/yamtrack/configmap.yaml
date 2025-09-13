@@ -6,3 +6,6 @@ data:
   REDIS_URL: redis://{{ include "yamtrack.fullname" . }}-redis:6379
   SECRET: {{ .Values.yamtrack.secret | quote }}
   TZ: Europe/Berlin
+  {{- if .Values.yamtrack.env }}
+  {{- toYaml .Values.yamtrack.env | nindent 2 }}
+  {{- end }}
